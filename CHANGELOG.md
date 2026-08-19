@@ -7,14 +7,17 @@ All notable changes to meowcaller, tracked per module. Format loosely follows
 
 ## [Unreleased]
 
-### call-lifecycle — `KAT-verified (offline; live pending)`
+### call-lifecycle — `KAT-verified + guarded-live-qualified`
 
 - Added a pinned lifecycle datasheet and an offline RED reproducer showing that
   relay readiness currently starts direct outgoing media before peer acceptance.
 - Gated direct outgoing media on peer acceptance while preserving either
   relay/accept arrival order, rejection finality, incoming media, and group-call
-  acceptance. The focused lifecycle KATs and the full Go suite pass; a guarded
-  live canary remains pending.
+  acceptance. The focused lifecycle KATs and the full Go suite pass.
+- A 2026-08-19 guarded canary produced one outbound offer, peer preaccept/accept,
+  media only after accept, bidirectional RTP, ready, and terminal end; the operator
+  confirmed peer-visible incoming calls. Local microphone/speaker were not part of
+  this qualification.
 
 ### media/group-runtime — `KAT-verified`
 
