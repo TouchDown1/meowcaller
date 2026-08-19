@@ -371,6 +371,54 @@ func TestOutgoingPeerAcceptLifecycle(t *testing.T) {
 	}
 }
 
+func TestOutgoingMediaWaitsForPeerAcceptWhenRelayArrivesFirst(t *testing.T) {
+	// Source of truth: https://github.com/WhiskeySockets/wacrg/blob/0114515cef5c0344a8a864f6ad5ff58e650550ed/spec/signalling/flow-outgoing-1to1.yaml#L42-L60
+	eng, call := testEngineWithOutgoingCall()
+	t.Cleanup(func() { eng.finishCall(call.ID(), "test cleanup") })
+	m := eng.calls[call.ID()]
+	m.callKey = make([]byte, 32)
+	m.relay = &relayData{}
+
+	eng.maybeStartMedia(call.ID())
+
+	eng.mu.Lock()
+	startedBeforeAccept := m.started
+	eng.mu.Unlock()
+	if startedBeforeAccept {
+		t.Fatal("outgoing media started from relay readiness before peer accept")
+	}
+	if got := call.State(); got != CallPhaseCalling {
+		t.Fatalf("relay readiness phase = %d, want Calling", got)
+	}
+
+	eng.onPreAccept(&events.CallPreAccept{
+		BasicCallMeta: types.BasicCallMeta{CallID: call.ID(), From: peerJID()},
+	})
+	eng.mu.Lock()
+	startedAfterPreAccept := m.started
+	eng.mu.Unlock()
+	if startedAfterPreAccept {
+		t.Fatal("outgoing media started from preaccept before peer accept")
+	}
+	if got := call.State(); got != CallPhaseRinging {
+		t.Fatalf("preaccept phase = %d, want Ringing", got)
+	}
+
+	eng.onAccept(&events.CallAccept{
+		BasicCallMeta: types.BasicCallMeta{CallID: call.ID(), From: peerJID()},
+		Data:          &waBinary.Node{Tag: "accept"},
+	})
+	eng.mu.Lock()
+	startedAfterAccept := m.started
+	eng.mu.Unlock()
+	if !startedAfterAccept {
+		t.Fatal("outgoing media did not start after relay and peer accept were both ready")
+	}
+	if got := call.State(); got != CallPhaseConnecting {
+		t.Fatalf("accept phase = %d, want Connecting", got)
+	}
+}
+
 func TestOutgoingAcceptRekeysToAnsweringDevice(t *testing.T) {
 	eng, call := testEngineWithOutgoingCall()
 	m := eng.calls[call.ID()]

@@ -7,6 +7,12 @@ All notable changes to meowcaller, tracked per module. Format loosely follows
 
 ## [Unreleased]
 
+### call-lifecycle — `partial`
+
+- Added a pinned lifecycle datasheet and an offline RED reproducer showing that
+  relay readiness currently starts direct outgoing media before peer acceptance.
+  The guarded implementation and GREEN evidence remain pending.
+
 ### media/group-runtime — `KAT-verified`
 
 - Hardened live group-call teardown by closing and detaching audio endpoints,
