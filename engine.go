@@ -69,6 +69,7 @@ type engineCall struct {
 	groupEpochTxID    uint32
 	hasGroupEpoch     bool
 	started           bool
+	peerAccepted      bool
 	cancel            context.CancelFunc // tears down this call's media goroutine
 	waitingRoomCancel context.CancelFunc
 	inviteSelfDevice  groupCallDevice
@@ -854,9 +855,10 @@ func (e *engine) onPreAccept(ev *events.CallPreAccept) {
 	})
 }
 
-// onAccept records that the peer answered an outgoing call. Media may already be running
-// from relay allocation, but inbound RTP is still what marks the call ready/active.
+// onAccept records that the peer answered an outgoing call. Inbound RTP is still what
+// marks the call ready/active.
 func (e *engine) onAccept(ev *events.CallAccept) {
+	// Source of truth: https://github.com/WhiskeySockets/wacrg/blob/0114515cef5c0344a8a864f6ad5ff58e650550ed/spec/signalling/flow-outgoing-1to1.yaml#L42-L60
 	m := e.lookup(ev.CallID)
 	if m == nil || m.direction != CallDirectionOutgoing {
 		return
@@ -880,6 +882,7 @@ func (e *engine) onAccept(ev *events.CallAccept) {
 	var rekeyPeer func(string) error
 	answeringPeer := ev.From.String()
 	if current := e.calls[ev.CallID]; current != nil {
+		current.peerAccepted = true
 		if device, ok := inviteDeviceCapability(ev.From, ev.Data); ok {
 			current.invitePeerDevice = device
 		}

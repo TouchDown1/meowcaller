@@ -38,12 +38,17 @@ type videoReceiveState struct {
 	orientation int
 }
 
-// maybeStartMedia launches the media loop for callID once both the callKey and the relay
-// endpoint are known. It is idempotent — the loop starts exactly once per call.
+// maybeStartMedia launches the media loop for callID once the key and relay are known
+// and an outgoing direct call has been accepted. It starts exactly once per call.
 func (e *engine) maybeStartMedia(callID string) {
+	// Source of truth: https://github.com/WhiskeySockets/wacrg/blob/0114515cef5c0344a8a864f6ad5ff58e650550ed/spec/signalling/flow-outgoing-1to1.yaml#L42-L60
 	e.mu.Lock()
 	m := e.calls[callID]
 	if m == nil || m.started {
+		e.mu.Unlock()
+		return
+	}
+	if !m.group && m.direction == CallDirectionOutgoing && !m.peerAccepted {
 		e.mu.Unlock()
 		return
 	}

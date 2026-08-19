@@ -419,6 +419,109 @@ func TestOutgoingMediaWaitsForPeerAcceptWhenRelayArrivesFirst(t *testing.T) {
 	}
 }
 
+func TestOutgoingMediaStartsWhenRelayArrivesAfterPeerAccept(t *testing.T) {
+	// Source of truth: https://github.com/WhiskeySockets/wacrg/blob/0114515cef5c0344a8a864f6ad5ff58e650550ed/spec/signalling/flow-outgoing-1to1.yaml#L42-L60
+	eng, call := testEngineWithOutgoingCall()
+	t.Cleanup(func() { eng.finishCall(call.ID(), "test cleanup") })
+	m := eng.calls[call.ID()]
+	m.callKey = make([]byte, 32)
+
+	eng.onAccept(&events.CallAccept{
+		BasicCallMeta: types.BasicCallMeta{CallID: call.ID(), From: peerJID()},
+		Data:          &waBinary.Node{Tag: "accept"},
+	})
+	eng.mu.Lock()
+	startedBeforeRelay := m.started
+	eng.mu.Unlock()
+	if startedBeforeRelay {
+		t.Fatal("outgoing media started before relay readiness")
+	}
+
+	eng.mu.Lock()
+	m.relay = &relayData{}
+	eng.mu.Unlock()
+	eng.maybeStartMedia(call.ID())
+
+	eng.mu.Lock()
+	startedAfterRelay := m.started
+	eng.mu.Unlock()
+	if !startedAfterRelay {
+		t.Fatal("outgoing media did not start after peer accept and relay were both ready")
+	}
+}
+
+func TestOutgoingRejectBeforeAcceptPreventsLateMedia(t *testing.T) {
+	// Source of truth: https://github.com/WhiskeySockets/wacrg/blob/0114515cef5c0344a8a864f6ad5ff58e650550ed/spec/signalling/flow-outgoing-1to1.yaml#L61-L67
+	eng, call := testEngineWithOutgoingCall()
+	m := eng.calls[call.ID()]
+	m.callKey = make([]byte, 32)
+	m.relay = &relayData{}
+
+	eng.onReject(&events.CallReject{BasicCallMeta: types.BasicCallMeta{CallID: call.ID()}})
+	eng.onAccept(&events.CallAccept{
+		BasicCallMeta: types.BasicCallMeta{CallID: call.ID(), From: peerJID()},
+		Data:          &waBinary.Node{Tag: "accept"},
+	})
+	eng.maybeStartMedia(call.ID())
+
+	if eng.lookup(call.ID()) != nil {
+		t.Fatal("rejected call was resurrected by late accept or relay readiness")
+	}
+	if got := call.State(); got != CallPhaseEnded {
+		t.Fatalf("rejected call phase = %d, want Ended", got)
+	}
+}
+
+func TestIncomingMediaDoesNotRequirePeerAccept(t *testing.T) {
+	// Source of truth: https://github.com/WhiskeySockets/wacrg/blob/0114515cef5c0344a8a864f6ad5ff58e650550ed/spec/signalling/flow-outgoing-1to1.yaml#L42-L60
+	eng, call := testEngineWithOutgoingCall()
+	t.Cleanup(func() { eng.finishCall(call.ID(), "test cleanup") })
+	m := eng.calls[call.ID()]
+	m.direction = CallDirectionIncoming
+	m.callKey = make([]byte, 32)
+	m.relay = &relayData{}
+	call.setPhase(CallPhaseRinging)
+
+	eng.maybeStartMedia(call.ID())
+
+	eng.mu.Lock()
+	started := m.started
+	eng.mu.Unlock()
+	if !started {
+		t.Fatal("incoming media was incorrectly gated on outgoing peer acceptance")
+	}
+	if got := call.State(); got != CallPhaseConnecting {
+		t.Fatalf("incoming media phase = %d, want Connecting", got)
+	}
+}
+
+func TestOutgoingGroupAcceptRemainsIndependentOfDirectMediaGate(t *testing.T) {
+	// Source of truth: https://github.com/purpshell/meowcaller/blob/676ebee3eca513b5348fab36cae5c560cc791238/datasheets/voip-group-invite-accept.md#L26-L45
+	eng, call := testEngineWithOutgoingCall()
+	m := eng.calls[call.ID()]
+	m.group = true
+	var accepted int
+	call.OnPeerAccept(func() { accepted++ })
+
+	eng.onAccept(&events.CallAccept{
+		BasicCallMeta: types.BasicCallMeta{CallID: call.ID(), From: peerJID()},
+		Data:          &waBinary.Node{Tag: "accept"},
+	})
+
+	if got := call.State(); got != CallPhaseConnecting {
+		t.Fatalf("group accept phase = %d, want Connecting", got)
+	}
+	if accepted != 1 {
+		t.Fatalf("group peer accept callbacks = %d, want 1", accepted)
+	}
+	eng.mu.Lock()
+	started := m.started
+	eng.mu.Unlock()
+	if started {
+		t.Fatal("group media started without its group epoch and relay prerequisites")
+	}
+}
+
 func TestOutgoingAcceptRekeysToAnsweringDevice(t *testing.T) {
 	eng, call := testEngineWithOutgoingCall()
 	m := eng.calls[call.ID()]
