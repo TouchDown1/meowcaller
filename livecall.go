@@ -3,7 +3,7 @@ package meowcaller
 import (
 	"sync"
 
-	"go.mau.fi/whatsmeow/types"
+	"github.com/polymorfa/hypermeow/types"
 )
 
 // Call is one live 1:1 call. Place one with Client.Call, or receive one (unanswered)
