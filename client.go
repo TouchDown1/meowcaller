@@ -6,7 +6,7 @@ import (
 
 	"github.com/purpshell/meowcaller/diag"
 	"github.com/rs/zerolog"
-	"go.mau.fi/whatsmeow"
+	"github.com/polymorfa/hypermeow"
 )
 
 // Client is the managed entry point to the WhatsApp 1:1 calling stack. It wraps a

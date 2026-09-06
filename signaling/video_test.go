@@ -3,7 +3,7 @@ package signaling
 import (
 	"testing"
 
-	waBinary "go.mau.fi/whatsmeow/binary"
+	waBinary "github.com/polymorfa/hypermeow/binary"
 )
 
 // TestOfferAdvertisesVideo checks the <video> child lands after the audios, before <net>.
