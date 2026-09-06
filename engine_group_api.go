@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/purpshell/meowcaller/signaling"
-	waBinary "go.mau.fi/whatsmeow/binary"
-	"go.mau.fi/whatsmeow/types"
+	waBinary "github.com/polymorfa/hypermeow/binary"
+	"github.com/polymorfa/hypermeow/types"
 )
 
 func (e *engine) placeGroupCall(

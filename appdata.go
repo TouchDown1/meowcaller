@@ -8,7 +8,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/purpshell/meowcaller/rtp"
-	"go.mau.fi/whatsmeow/types"
+	"github.com/polymorfa/hypermeow/types"
 	"google.golang.org/protobuf/encoding/protowire"
 )
 

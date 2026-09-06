@@ -6,8 +6,8 @@ import (
 
 	"github.com/purpshell/meowcaller/signaling"
 	"github.com/rs/zerolog"
-	waBinary "go.mau.fi/whatsmeow/binary"
-	"go.mau.fi/whatsmeow/types"
+	waBinary "github.com/polymorfa/hypermeow/binary"
+	"github.com/polymorfa/hypermeow/types"
 )
 
 func testGroupEngine(callID string) (*engine, *Call, types.JID) {

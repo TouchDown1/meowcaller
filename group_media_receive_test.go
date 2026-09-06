@@ -11,7 +11,7 @@ import (
 
 	"github.com/purpshell/meowcaller/rtp"
 	"github.com/purpshell/meowcaller/srtp"
-	"go.mau.fi/whatsmeow/types"
+	"github.com/polymorfa/hypermeow/types"
 )
 
 type recordingParticipantDecoder struct {
