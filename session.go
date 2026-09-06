@@ -5,7 +5,7 @@ import (
 	"sync/atomic"
 
 	"github.com/rs/zerolog"
-	"go.mau.fi/whatsmeow/types"
+	"github.com/polymorfa/hypermeow/types"
 
 	"github.com/purpshell/meowcaller/rtp"
 	"github.com/purpshell/meowcaller/srtp"

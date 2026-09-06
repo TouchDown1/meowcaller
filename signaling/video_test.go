@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"testing"
 
-	waBinary "go.mau.fi/whatsmeow/binary"
-	"go.mau.fi/whatsmeow/types"
+	waBinary "github.com/polymorfa/hypermeow/binary"
+	"github.com/polymorfa/hypermeow/types"
 )
 
 // TestOfferAdvertisesVideo checks the <video> child lands after the audios, before <net>.

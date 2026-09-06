@@ -9,8 +9,8 @@ import (
 
 	"github.com/purpshell/meowcaller/diag"
 	"github.com/rs/zerolog"
-	"go.mau.fi/whatsmeow"
-	"go.mau.fi/whatsmeow/types"
+	"github.com/polymorfa/hypermeow"
+	"github.com/polymorfa/hypermeow/types"
 )
 
 // Client is the managed entry point to the WhatsApp calling stack. It wraps a

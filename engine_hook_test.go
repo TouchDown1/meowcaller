@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/rs/zerolog"
-	"go.mau.fi/whatsmeow"
-	"go.mau.fi/whatsmeow/store"
-	waLog "go.mau.fi/whatsmeow/util/log"
+	"github.com/polymorfa/hypermeow"
+	"github.com/polymorfa/hypermeow/store"
+	waLog "github.com/polymorfa/hypermeow/util/log"
 )
 
 func TestInstallCallAckHookMatchesPinnedUpstreamLayout(t *testing.T) {

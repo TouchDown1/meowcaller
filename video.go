@@ -6,7 +6,7 @@ import (
 	"os"
 	"sync"
 
-	"go.mau.fi/whatsmeow/types"
+	"github.com/polymorfa/hypermeow/types"
 )
 
 // Video in meowcaller is encoded H.264, carried as Annex-B access units (one frame's worth
